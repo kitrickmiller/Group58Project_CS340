@@ -19,16 +19,19 @@ export default function EntityManager({ entity }) {
     const [dropdownOptions, setDropdownOptions] = useState({});
     const [isEditMode, setIsEditMode] = useState(false);
 
+    // Determine API host based on environment
     const apiHost = process.env.NODE_ENV === 'production'
         ? `http://${window.location.hostname}:53261`
         : 'http://localhost:53261';
     const base = `${apiHost}/api/${entity.endpoint}`;
 
-    const isCompositeKey = (endpoint) => 
-        endpoint.includes('character_items') || 
-        endpoint.includes('character_quests') || 
+    // Helper function to check if the entity uses composite keys
+    const isCompositeKey = (endpoint) =>
+        endpoint.includes('character_items') ||
+        endpoint.includes('character_quests') ||
         endpoint.includes('monster_areas');
 
+    // Load items from the API
     const load = () => {
         setLoading(true);
         setError(null);
@@ -38,6 +41,7 @@ export default function EntityManager({ entity }) {
             .finally(() => setLoading(false));
     };
 
+    // Fetch dropdown options for select fields
     useEffect(() => {
         const fetchDropdownOptions = async () => {
             const options = {};
@@ -57,18 +61,22 @@ export default function EntityManager({ entity }) {
         fetchDropdownOptions();
     }, [entity]);
 
+    // Load items when the component mounts or when the entity changes
     useEffect(() => { load(); }, [entity]);
 
+    // Handle form input changes
     function handleChange(e) {
         const { name, type, value, checked } = e.target;
         setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
     }
 
+    // Handle edit button click - populate form with item data and switch to edit mode
     function handleEdit(item) {
         setForm(item);
         setIsEditMode(true);
     }
 
+    // Handle form reset - clear form and exit edit mode
     function handleReset() {
         const empty = {};
         entity.fields.forEach((f) => { empty[f.name] = f.type === 'checkbox' ? false : ''; });
@@ -76,18 +84,22 @@ export default function EntityManager({ entity }) {
         setIsEditMode(false);
     }
 
+    // Handle form submission for creating or updating an item
     async function handleSubmit(e) {
         e.preventDefault();
         setError(null);
         const payload = {};
         entity.fields.forEach((f) => { payload[f.name] = form[f.name]; });
 
+        // Determine if we are in edit mode and if the necessary keys are present for update vs create
         try {
+            // Determine the ID field and check for composite keys if applicable
             const idField = entity.idField || 'id';
             const hasCompositeKeys = (entity.endpoint.includes('character_items') && form.characterID && form.itemID) ||
-                                    (entity.endpoint.includes('character_quests') && form.characterID && form.questID) ||
-                                    (entity.endpoint.includes('monster_areas') && form.monsterID && form.areaID);
-            
+                (entity.endpoint.includes('character_quests') && form.characterID && form.questID) ||
+                (entity.endpoint.includes('monster_areas') && form.monsterID && form.areaID);
+
+            // If in edit mode and we have the necessary keys, perform an update (PUT), otherwise create a new item (POST)
             if (isEditMode && (form[idField] || hasCompositeKeys)) {
                 let url = `${base}`;
                 if (entity.endpoint.includes('character_items') && form.characterID && form.itemID) {
@@ -99,12 +111,13 @@ export default function EntityManager({ entity }) {
                 } else {
                     url = `${base}/${form[idField]}`;
                 }
-                
+
                 await fetchJson(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
+            // If not in edit mode, create a new item
             } else {
                 await fetchJson(base, {
                     method: 'POST',
@@ -119,15 +132,17 @@ export default function EntityManager({ entity }) {
         }
     }
 
+    // Handle delete button click - confirm and delete the item
     function handleDelete(item) {
         const idField = entity.idField || 'id';
         const confirmMsg = isCompositeKey(entity.endpoint)
             ? `Delete this ${entity.label} entry?`
             : `Delete ${entity.label} #${item[idField]}?`;
-        
+
         if (!window.confirm(confirmMsg)) return;
         setError(null);
-        
+
+        // Determine the correct URL for deletion based on whether the entity uses composite keys
         let url = base;
         if (entity.endpoint.includes('character_items')) {
             url = `${base}/${item.characterID}/${item.itemID}`;
@@ -138,16 +153,19 @@ export default function EntityManager({ entity }) {
         } else {
             url = `${base}/${item[idField]}`;
         }
-        
+
+        // Perform the delete request
         fetchJson(url, { method: 'DELETE' })
             .then(() => load())
             .catch((err) => setError(err.message));
     }
 
+    // Reset form when entity changes
     useEffect(() => {
         handleReset();
     }, [entity]);
 
+    // Render the entity manager UI
     return (
         <div className="entity-manager">
             <div className="entity-form">

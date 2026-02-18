@@ -10,6 +10,8 @@ import CharacterItemsPage from './pages/CharacterItemsPage.jsx';
 import CharacterQuestsPage from './pages/CharacterQuestsPage.jsx';
 import MonsterAreasPage from './pages/MonsterAreasPage.jsx';
 
+
+// Main application router component that defines the navigation and routes for the app
 export default function AppRouter() {
   return (
     <Router>
