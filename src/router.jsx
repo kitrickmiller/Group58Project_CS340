@@ -13,6 +13,7 @@ import CharacterItemsPage from './pages/CharacterItemsPage.jsx';
 import CharacterQuestsPage from './pages/CharacterQuestsPage.jsx';
 import MonsterAreasPage from './pages/MonsterAreasPage.jsx';
 
+// defines the main router for the application, including the header and navigation links
 export default function AppRouter() {
   return (
     <Router>
