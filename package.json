@@ -1,0 +1,49 @@
+{
+  "name": "dungeon-master-companion-ui",
+  "version": "0.1.0",
+  "private": true,
+  "proxy": "http://localhost:5000",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.22.1",
+    "forever": "^4.0.3",
+    "mysql2": "^3.17.0",
+    "path": "^0.12.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.13.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "development": "react-scripts start",
+    "build": "react-scripts build",
+    "production": "npx forever start reactServer.cjs",
+    "stop_production": "npx forever stop reactServer.cjs",
+    "backend:development": "nodemon server.js",
+    "backend:production": "npx forever start server.js",
+    "backend:stop_production": "npx forever stop server.js",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "author": "Kitrick Miller",
+  "license": "MIT",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "vite": "^7.3.1",
+    "nodemon": "^2.0.22"
+  }
+}
