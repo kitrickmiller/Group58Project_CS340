@@ -1,6 +1,3 @@
-// Page component for the home page of the Dungeon Master Companion app.
-// Displays a welcome message and instructions for using the app.
-
 import React from 'react';
 
 export default function HomePage() {

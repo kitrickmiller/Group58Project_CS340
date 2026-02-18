@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-// helper to fetch JSON and handle errors
 function fetchJson(url, opts) {
     return fetch(url, opts).then(async (res) => {
         if (!res.ok) {
@@ -13,7 +12,6 @@ function fetchJson(url, opts) {
 
 // Entity Manager component for CRUD operations on any entity type defined in entitiesConfig
 export default function EntityManager({ entity }) {
-    // entity: { key, label, endpoint, fields: [{name,label,type}] }
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,15 +19,16 @@ export default function EntityManager({ entity }) {
     const [dropdownOptions, setDropdownOptions] = useState({});
     const [isEditMode, setIsEditMode] = useState(false);
 
-    // base API URL for this entity
-    // In development: use localhost
-    // In production: use the same hostname as the frontend
     const apiHost = process.env.NODE_ENV === 'production'
         ? `http://${window.location.hostname}:53261`
         : 'http://localhost:53261';
     const base = `${apiHost}/api/${entity.endpoint}`;
 
-    // load items from API and handle loading/error states
+    const isCompositeKey = (endpoint) => 
+        endpoint.includes('character_items') || 
+        endpoint.includes('character_quests') || 
+        endpoint.includes('monster_areas');
+
     const load = () => {
         setLoading(true);
         setError(null);
@@ -39,7 +38,6 @@ export default function EntityManager({ entity }) {
             .finally(() => setLoading(false));
     };
 
-    // Load dropdown options for select fields
     useEffect(() => {
         const fetchDropdownOptions = async () => {
             const options = {};
@@ -85,19 +83,12 @@ export default function EntityManager({ entity }) {
         entity.fields.forEach((f) => { payload[f.name] = form[f.name]; });
 
         try {
-            // Check if this is a composite key entity (intersection table)
-            const isCompositeKey = entity.endpoint.includes('character_items') || 
-                                  entity.endpoint.includes('character_quests') || 
-                                  entity.endpoint.includes('monster_areas');
-            
             const idField = entity.idField || 'id';
-            // Check if we have the necessary IDs for edit mode
             const hasCompositeKeys = (entity.endpoint.includes('character_items') && form.characterID && form.itemID) ||
                                     (entity.endpoint.includes('character_quests') && form.characterID && form.questID) ||
                                     (entity.endpoint.includes('monster_areas') && form.monsterID && form.areaID);
             
             if (isEditMode && (form[idField] || hasCompositeKeys)) {
-                // For composite keys, determine the correct URL
                 let url = `${base}`;
                 if (entity.endpoint.includes('character_items') && form.characterID && form.itemID) {
                     url = `${base}/${form.characterID}/${form.itemID}`;
@@ -129,13 +120,8 @@ export default function EntityManager({ entity }) {
     }
 
     function handleDelete(item) {
-        // Check if this is a composite key entity (intersection table)
-        const isCompositeKey = entity.endpoint.includes('character_items') || 
-                              entity.endpoint.includes('character_quests') || 
-                              entity.endpoint.includes('monster_areas');
-        
         const idField = entity.idField || 'id';
-        const confirmMsg = isCompositeKey 
+        const confirmMsg = isCompositeKey(entity.endpoint)
             ? `Delete this ${entity.label} entry?`
             : `Delete ${entity.label} #${item[idField]}?`;
         
@@ -143,14 +129,12 @@ export default function EntityManager({ entity }) {
         setError(null);
         
         let url = base;
-        if (isCompositeKey) {
-            if (entity.endpoint.includes('character_items')) {
-                url = `${base}/${item.characterID}/${item.itemID}`;
-            } else if (entity.endpoint.includes('character_quests')) {
-                url = `${base}/${item.characterID}/${item.questID}`;
-            } else if (entity.endpoint.includes('monster_areas')) {
-                url = `${base}/${item.monsterID}/${item.areaID}`;
-            }
+        if (entity.endpoint.includes('character_items')) {
+            url = `${base}/${item.characterID}/${item.itemID}`;
+        } else if (entity.endpoint.includes('character_quests')) {
+            url = `${base}/${item.characterID}/${item.questID}`;
+        } else if (entity.endpoint.includes('monster_areas')) {
+            url = `${base}/${item.monsterID}/${item.areaID}`;
         } else {
             url = `${base}/${item[idField]}`;
         }
@@ -160,7 +144,6 @@ export default function EntityManager({ entity }) {
             .catch((err) => setError(err.message));
     }
 
-    // initialize form when entity changes
     useEffect(() => {
         handleReset();
     }, [entity]);
@@ -225,43 +208,23 @@ export default function EntityManager({ entity }) {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
-                                {entity.displayFields ? (
-                                    entity.displayFields.map((f) => (
-                                        <th key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>{f.label}</th>
-                                    ))
-                                ) : (
-                                    <>
-                                        <th style={{ border: '1px solid #eee', padding: 6 }}>ID</th>
-                                        {entity.fields.map((f) => (
-                                            <th key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>{f.label}</th>
-                                        ))}
-                                    </>
-                                )}
+                                {entity.displayFields.map((f) => (
+                                    <th key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>{f.label}</th>
+                                ))}
                                 <th style={{ border: '1px solid #eee', padding: 6 }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {items.length === 0 && (
-                                <tr><td colSpan={(entity.displayFields?.length || entity.fields.length + 1) + 1}>No items</td></tr>
+                                <tr><td colSpan={entity.displayFields.length + 1}>No items</td></tr>
                             )}
                             {items.map((it, idx) => (
                                 <tr key={`${entity.endpoint}-${idx}`}>
-                                    {entity.displayFields ? (
-                                        entity.displayFields.map((f) => (
-                                            <td key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>
-                                                {String(it[f.name] ?? '')}
-                                            </td>
-                                        ))
-                                    ) : (
-                                        <>
-                                            <td style={{ border: '1px solid #eee', padding: 6 }}>{it.id}</td>
-                                            {entity.fields.map((f) => (
-                                                <td key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>
-                                                    {String(it[f.name] ?? '')}
-                                                </td>
-                                            ))}
-                                        </>
-                                    )}
+                                    {entity.displayFields.map((f) => (
+                                        <td key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>
+                                            {String(it[f.name] ?? '')}
+                                        </td>
+                                    ))}
                                     <td style={{ border: '1px solid #eee', padding: 6, display: 'flex', gap: 8 }}>
                                         <button onClick={() => handleEdit(it)} aria-label={`Edit ${entity.label}`} title="Edit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 6 }}>
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>

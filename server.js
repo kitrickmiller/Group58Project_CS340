@@ -1,6 +1,3 @@
-// server.js
-// Backend API server that connects to the OSU MySQL database
-
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -10,11 +7,9 @@ const app = express();
 app.use(cors({ credentials: true, origin: '*' }));
 app.use(express.json());
 
-// Use the shared pool from db-connector
 const pool = db;
 const MY_ONID = 'millekit';
 
-// Diagnostic root route (creates a small diagnostic table and returns it)
 app.get('/', async (req, res) => {
   try {
     const query1 = 'DROP TABLE IF EXISTS diagnostic;';

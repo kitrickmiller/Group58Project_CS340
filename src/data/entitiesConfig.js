@@ -1,7 +1,3 @@
-// This file defines the configuration for different entities in the Dungeon Master Companion app.
-// Each entity has a key, label, API endpoint, and a list of fields with their types and labels.
-// This configuration is used by the EntityManager component to dynamically generate forms and manage data for each entity type.
-
 const entities = [
   {
     key: 'characters',

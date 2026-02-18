@@ -1,6 +1,3 @@
-// Page component for managing Character Items in the Dungeon Master Companion app.
-// Uses the EntityManager component to display and manage character item data based on the defined entity configuration.
-
 import React from 'react';
 import EntityManager from '../components/EntityManager.jsx';
 

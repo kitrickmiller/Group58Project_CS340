@@ -1,6 +1,3 @@
-// Router component for the Dungeon Master Companion frontend application.
-// Manages routing between different pages of the app using React Router.
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import HomePage from './pages/HomePage.jsx';
@@ -13,7 +10,6 @@ import CharacterItemsPage from './pages/CharacterItemsPage.jsx';
 import CharacterQuestsPage from './pages/CharacterQuestsPage.jsx';
 import MonsterAreasPage from './pages/MonsterAreasPage.jsx';
 
-// defines the main router for the application, including the header and navigation links
 export default function AppRouter() {
   return (
     <Router>
