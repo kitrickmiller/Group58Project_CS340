@@ -184,17 +184,10 @@ VALUES ((SELECT monsterID FROM Monsters WHERE monsterName = 'Goblin'),
 ((SELECT monsterID FROM Monsters WHERE monsterName = 'Dragon Wyrmling'),
     (SELECT areaID FROM Areas WHERE areaName = 'Storm Coast'), 3);
 
--- STORED PROCEDURES FOR RESET DEMO --
-DROP PROCEDURE IF EXISTS DemoDeleteArin;
+-- STORED PROCEDURE FOR RESET DEMO --
 DROP PROCEDURE IF EXISTS ResetToDDLState;
 
 DELIMITER //
-
-CREATE PROCEDURE DemoDeleteArin()
-BEGIN
-    DELETE FROM Characters
-    WHERE characterName = 'Arin';
-END //
 
 CREATE PROCEDURE ResetToDDLState()
 BEGIN
