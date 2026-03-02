@@ -27,7 +27,7 @@ CREATE TABLE Characters (
     characterID INT AUTO_INCREMENT PRIMARY KEY,
     characterName VARCHAR(100) NOT NULL,
     species VARCHAR(50) NOT NULL,
-    isPlayerCharacter BOOLEAN NOT NULL,
+    isPlayerCharacter TINYINT(1) NOT NULL,
     totalExperience INT DEFAULT 0,
     currentLevel INT,
     currentHP INT,
@@ -50,7 +50,7 @@ CREATE TABLE Items (
 CREATE TABLE Areas (
     areaID INT AUTO_INCREMENT PRIMARY KEY,
     areaType VARCHAR(50),
-    areaName VARCHAR(50) NOT NULL UNIQUE
+    areaName VARCHAR(50) UNIQUE
 );
 
 -- Quests
@@ -59,7 +59,7 @@ CREATE TABLE Quests (
     questName VARCHAR(100) UNIQUE,
     questDescription TEXT,
     questLevel INT,
-    areaID INT,
+    areaID INT NOT NULL,
     FOREIGN KEY (areaID) REFERENCES Areas(areaID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
@@ -68,7 +68,7 @@ CREATE TABLE Quests (
 -- Monsters
 CREATE TABLE Monsters (
     monsterID INT AUTO_INCREMENT PRIMARY KEY,
-    monsterName VARCHAR(50) NOT NULL UNIQUE,
+    monsterName VARCHAR(50) UNIQUE,
     maxHP INT NOT NULL,
     challengeRating INT,
     sourceBook VARCHAR(50),
@@ -78,10 +78,10 @@ CREATE TABLE Monsters (
 
 -- Character_Items (Intersection)
 CREATE TABLE Character_Items (
-    characterID INT,
-    itemID INT,
-    quantity INT DEFAULT 1,
-    isEquipped BOOLEAN DEFAULT FALSE,
+    characterID INT NOT NULL,
+    itemID INT NOT NULL,
+    quantity INT,
+    isEquipped TINYINT(1),
     PRIMARY KEY (characterID, itemID),
     FOREIGN KEY (characterID) REFERENCES Characters(characterID)
         ON DELETE CASCADE
@@ -93,8 +93,8 @@ CREATE TABLE Character_Items (
 
 -- Character_Quests (Intersection)
 CREATE TABLE Character_Quests (
-    characterID INT,
-    questID INT,
+    characterID INT NOT NULL,
+    questID INT NOT NULL,
     status VARCHAR(50),
     PRIMARY KEY (characterID, questID),
     FOREIGN KEY (characterID) REFERENCES Characters(characterID)
@@ -106,9 +106,9 @@ CREATE TABLE Character_Quests (
 );
 -- Monster Areas (Intersection)
 CREATE TABLE Monster_Areas (
-    monsterID INT,
-    areaID INT,
-    quantity INT DEFAULT 1,
+    monsterID INT NOT NULL,
+    areaID INT NOT NULL,
+    quantity INT,
     PRIMARY KEY (monsterID, areaID),
     FOREIGN KEY (monsterID) REFERENCES Monsters(monsterID)
         ON DELETE CASCADE
@@ -184,7 +184,7 @@ VALUES ((SELECT monsterID FROM Monsters WHERE monsterName = 'Goblin'),
 ((SELECT monsterID FROM Monsters WHERE monsterName = 'Dragon Wyrmling'),
     (SELECT areaID FROM Areas WHERE areaName = 'Storm Coast'), 3);
 
--- STORED PROCEDURE FOR RESET DEMO --
+-- STORED PROCEDURE FOR RESET --
 DROP PROCEDURE IF EXISTS ResetToDDLState;
 
 DELIMITER //
