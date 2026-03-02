@@ -58,14 +58,22 @@ const entities = [
       { name: 'questName', label: 'Name', type: 'text', required: true },
       { name: 'questDescription', label: 'Description / URL', type: 'text' },
       { name: 'questLevel', label: 'Suggested Level', type: 'number' },
-      { name: 'areaID', label: 'Area ID', type: 'number' }
+      { 
+        name: 'areaID', 
+        label: 'Area', 
+        type: 'select',
+        optionsEndpoint: 'areas',
+        optionValue: 'areaID',
+        optionLabel: 'areaName'
+      }
     ],
     displayFields: [
       { name: 'questID', label: 'ID' },
       { name: 'questName', label: 'Name' },
       { name: 'questDescription', label: 'Description / URL' },
       { name: 'questLevel', label: 'Suggested Level' },
-      { name: 'areaID', label: 'Area ID' }
+      { name: 'areaID', label: 'Area ID' },
+      { name: 'areaName', label: 'Area Name' }
     ]
   },
   {

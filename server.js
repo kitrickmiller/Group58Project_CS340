@@ -10,6 +10,18 @@ app.use(express.json());
 const pool = db;
 const MY_ONID = 'millekit';
 
+// Validation function to check for negative numeric values
+function validateNoNegatives(data) {
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== null && value !== undefined && value !== '') {
+      const num = Number(value);
+      if (!isNaN(num) && num < 0) {
+        throw new Error(`${key} cannot be negative. Value: ${value}`);
+      }
+    }
+  }
+}
+
 app.get('/', async (req, res) => {
   try {
     const query1 = 'DROP TABLE IF EXISTS diagnostic;';
@@ -42,6 +54,7 @@ app.get('/api/characters', async (req, res) => {
 app.post('/api/characters', async (req, res) => {
   const { characterName, species, isPlayerCharacter, totalExperience, currentLevel, currentHP, maxHP, armorClass, alignment, profBonus } = req.body;
   try {
+    validateNoNegatives(req.body);
     const [result] = await pool.query(
       'INSERT INTO Characters (characterName, species, isPlayerCharacter, totalExperience, currentLevel, currentHP, maxHP, armorClass, alignment, profBonus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [characterName, species, isPlayerCharacter, totalExperience, currentLevel, currentHP, maxHP, armorClass, alignment, profBonus]
@@ -56,6 +69,7 @@ app.put('/api/characters/:id', async (req, res) => {
   const { id } = req.params;
   const { characterName, species, isPlayerCharacter, totalExperience, currentLevel, currentHP, maxHP, armorClass, alignment, profBonus } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'UPDATE Characters SET characterName=?, species=?, isPlayerCharacter=?, totalExperience=?, currentLevel=?, currentHP=?, maxHP=?, armorClass=?, alignment=?, profBonus=? WHERE characterID=?',
       [characterName, species, isPlayerCharacter, totalExperience, currentLevel, currentHP, maxHP, armorClass, alignment, profBonus, id]
@@ -89,6 +103,7 @@ app.get('/api/items', async (req, res) => {
 app.post('/api/items', async (req, res) => {
   const { itemName, itemType, rarity, weight } = req.body;
   try {
+    validateNoNegatives(req.body);
     const [result] = await pool.query(
       'INSERT INTO Items (itemName, itemType, rarity, weight) VALUES (?, ?, ?, ?)',
       [itemName, itemType, rarity, weight]
@@ -103,6 +118,7 @@ app.put('/api/items/:id', async (req, res) => {
   const { id } = req.params;
   const { itemName, itemType, rarity, weight } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'UPDATE Items SET itemName=?, itemType=?, rarity=?, weight=? WHERE itemID=?',
       [itemName, itemType, rarity, weight, id]
@@ -173,7 +189,12 @@ app.delete('/api/areas/:id', async (req, res) => {
 // QUESTS
 app.get('/api/quests', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Quests');
+    const [rows] = await pool.query(`
+      SELECT q.questID, q.questName, q.questDescription, q.questLevel, q.areaID,
+             a.areaName
+      FROM Quests q
+      LEFT JOIN Areas a ON q.areaID = a.areaID
+    `);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -183,6 +204,7 @@ app.get('/api/quests', async (req, res) => {
 app.post('/api/quests', async (req, res) => {
   const { questName, questDescription, questLevel, areaID } = req.body;
   try {
+    validateNoNegatives(req.body);
     const [result] = await pool.query(
       'INSERT INTO Quests (questName, questDescription, questLevel, areaID) VALUES (?, ?, ?, ?)',
       [questName, questDescription, questLevel, areaID]
@@ -197,6 +219,7 @@ app.put('/api/quests/:id', async (req, res) => {
   const { id } = req.params;
   const { questName, questDescription, questLevel, areaID } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'UPDATE Quests SET questName=?, questDescription=?, questLevel=?, areaID=? WHERE questID=?',
       [questName, questDescription, questLevel, areaID, id]
@@ -230,6 +253,7 @@ app.get('/api/monsters', async (req, res) => {
 app.post('/api/monsters', async (req, res) => {
   const { monsterName, maxHP, challengeRating, sourceBook, sourcePage, experiencePoints } = req.body;
   try {
+    validateNoNegatives(req.body);
     const [result] = await pool.query(
       'INSERT INTO Monsters (monsterName, maxHP, challengeRating, sourceBook, sourcePage, experiencePoints) VALUES (?, ?, ?, ?, ?, ?)',
       [monsterName, maxHP, challengeRating, sourceBook, sourcePage, experiencePoints]
@@ -244,6 +268,7 @@ app.put('/api/monsters/:id', async (req, res) => {
   const { id } = req.params;
   const { monsterName, maxHP, challengeRating, sourceBook, sourcePage, experiencePoints } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'UPDATE Monsters SET monsterName=?, maxHP=?, challengeRating=?, sourceBook=?, sourcePage=?, experiencePoints=? WHERE monsterID=?',
       [monsterName, maxHP, challengeRating, sourceBook, sourcePage, experiencePoints, id]
@@ -283,6 +308,7 @@ app.get('/api/character_items', async (req, res) => {
 app.post('/api/character_items', async (req, res) => {
   const { characterID, itemID, quantity, isEquipped } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'INSERT INTO Character_Items (characterID, itemID, quantity, isEquipped) VALUES (?, ?, ?, ?)',
       [characterID, itemID, quantity, isEquipped]
@@ -297,6 +323,7 @@ app.put('/api/character_items/:characterID/:itemID', async (req, res) => {
   const { characterID, itemID } = req.params;
   const { quantity, isEquipped } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'UPDATE Character_Items SET quantity=?, isEquipped=? WHERE characterID=? AND itemID=?',
       [quantity, isEquipped, characterID, itemID]
@@ -389,6 +416,7 @@ app.get('/api/monster_areas', async (req, res) => {
 app.post('/api/monster_areas', async (req, res) => {
   const { monsterID, areaID, quantity } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'INSERT INTO Monster_Areas (monsterID, areaID, quantity) VALUES (?, ?, ?)',
       [monsterID, areaID, quantity]
@@ -403,6 +431,7 @@ app.put('/api/monster_areas/:monsterID/:areaID', async (req, res) => {
   const { monsterID, areaID } = req.params;
   const { quantity } = req.body;
   try {
+    validateNoNegatives(req.body);
     await pool.query(
       'UPDATE Monster_Areas SET quantity=? WHERE monsterID=? AND areaID=?',
       [quantity, monsterID, areaID]
@@ -422,6 +451,23 @@ app.delete('/api/monster_areas/:monsterID/:areaID', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// RESET / DEMO PROCEDURE ROUTES
+async function runProcedure(req, res, callStatement) {
+  try {
+    await pool.query(callStatement);
+    res.json({ success: true, procedure: callStatement });
+  } catch (error) {
+    console.error('Error executing stored procedure:', error);
+    res.status(500).json({ error: 'An error occurred while executing the stored procedure.' });
+  }
+}
+
+app.get('/api/demo/delete-arin', async (req, res) => runProcedure(req, res, 'CALL DemoDeleteArin();'));
+app.post('/api/demo/delete-arin', async (req, res) => runProcedure(req, res, 'CALL DemoDeleteArin();'));
+
+app.get('/api/demo/reset-db', async (req, res) => runProcedure(req, res, 'CALL ResetToDDLState();'));
+app.post('/api/demo/reset-db', async (req, res) => runProcedure(req, res, 'CALL ResetToDDLState();'));
 
 const PORT = 53261;
 app.listen(PORT, () => {

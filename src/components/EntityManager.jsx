@@ -12,12 +12,12 @@ function fetchJson(url, opts) {
 
 // Entity Manager component for CRUD operations on any entity type defined in entitiesConfig
 export default function EntityManager({ entity }) {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [form, setForm] = useState({});
-    const [dropdownOptions, setDropdownOptions] = useState({});
-    const [isEditMode, setIsEditMode] = useState(false);
+    const [items, setItems] = useState([]); // List of items for the current entity
+    const [loading, setLoading] = useState(true); // Loading state for API calls
+    const [error, setError] = useState(null); // Error message for API call failures
+    const [form, setForm] = useState({}); // Form state for create/edit operations
+    const [dropdownOptions, setDropdownOptions] = useState({}); // Dropdown options for select fields
+    const [isEditMode, setIsEditMode] = useState(false); // Flag to determine if app is in edit mode (vs create mode)
 
     // Determine API host based on environment
     const apiHost = process.env.NODE_ENV === 'production'
@@ -204,6 +204,8 @@ export default function EntityManager({ entity }) {
                                     value={form[f.name] ?? ''}
                                     onChange={handleChange}
                                     required={f.required}
+                                    min={f.type === 'number' ? '0' : undefined}
+                                    step={f.type === 'number' ? '1' : undefined}
                                     style={{ display: 'block', width: '100%', padding: 6, marginTop: 4 }}
                                 />
                             )}
@@ -238,11 +240,22 @@ export default function EntityManager({ entity }) {
                             )}
                             {items.map((it, idx) => (
                                 <tr key={`${entity.endpoint}-${idx}`}>
-                                    {entity.displayFields.map((f) => (
-                                        <td key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>
-                                            {String(it[f.name] ?? '')}
-                                        </td>
-                                    ))}
+                                    {entity.displayFields.map((f) => {
+                                        // Format boolean values as yes/no
+                                        let displayValue = it[f.name] ?? '';
+                                        const field = entity.fields.find(field => field.name === f.name);
+                                        if (field && field.type === 'checkbox') {
+                                            displayValue = (displayValue === 1 || displayValue === true || displayValue === '1') ? 'yes' : 'no';
+                                        } else {
+                                            displayValue = String(displayValue);
+                                        }
+                                        
+                                        return (
+                                            <td key={f.name} style={{ border: '1px solid #eee', padding: 6 }}>
+                                                {displayValue}
+                                            </td>
+                                        );
+                                    })}
                                     <td style={{ border: '1px solid #eee', padding: 6, display: 'flex', gap: 8 }}>
                                         <button onClick={() => handleEdit(it)} aria-label={`Edit ${entity.label}`} title="Edit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 6 }}>
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
