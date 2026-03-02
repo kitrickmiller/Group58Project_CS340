@@ -5,7 +5,8 @@
 -- The schema includes tables for Characters, Items, Areas, Quests, Monsters,
 -- and the necessary intersection tables to manage many-to-many relationships.
 -- It also will provide the SQL statements that insert sample data into these tables.
-
+-- AI Citation: AI was used to help generate the PL/SQL stored procedure. Chat-GPT 5.3-Codex.
+-- Prompts used: "Can you fix the stored procedure to properly reset the database to the initial state defined in the DDL file? The procedure should truncate all tables and reinsert the initial data."
 SET FOREIGN_KEY_CHECKS = 0;
 SET AUTOCOMMIT = 0;
 START TRANSACTION;

@@ -1,3 +1,8 @@
+// AI Citation: The EntityManager component was original work that was then bugfixed and refactored by ChatGPT. Prompts used: 
+// "Refactor the EntityManager component to improve error handling, loading state management, and form handling."  
+// "Add support for composite keys in the EntityManager component for character_items, character_quests, and monster_areas entities."
+// "Improve the user interface of the EntityManager component by adding better form controls, error messages, and loading indicators."
+
 import React, { useEffect, useState } from 'react';
 
 function fetchJson(url, opts) {

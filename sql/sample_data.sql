@@ -1,4 +1,5 @@
 -- Sample Data for the Dungeon Master Companion
+-- AI Citation: AI was not used for the creation of this file.
 
 -- AREAS
 INSERT INTO Areas (areaName, areaType) VALUES

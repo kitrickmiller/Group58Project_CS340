@@ -1,5 +1,6 @@
 // db-connector.js
 // Create and export a mysql2 promise-based connection pool
+// AI Citation: AI was not used for the creation of this file.
 const mysql = require('mysql2');
 
 const pool = mysql.createPool({

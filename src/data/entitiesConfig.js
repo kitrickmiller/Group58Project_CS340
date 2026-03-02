@@ -1,3 +1,5 @@
+// AI CItation: Ai was not used for the creation of this file. The entitiesConfig.js file was created manually to define the configuration for different entities in the application, including their fields, display fields, and API endpoints. This configuration is used by the EntityManager component to dynamically generate forms and tables for managing these entities.
+
 const entities = [
   {
     key: 'characters',

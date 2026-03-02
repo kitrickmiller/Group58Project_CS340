@@ -1,5 +1,6 @@
 -- Data Manipulation Queries for DM Companion
 -- Mirrors CRUD operations implemented in server.js
+// AI Citation: AI was not used for the creation of this file.
 
 -- CHARACTERS
 SELECT * FROM Characters;

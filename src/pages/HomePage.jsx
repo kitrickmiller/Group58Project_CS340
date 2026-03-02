@@ -1,3 +1,5 @@
+// AI Citation: AI was not used for the creation of this file.
+
 import React, { useState } from 'react';
 
 export default function HomePage() {

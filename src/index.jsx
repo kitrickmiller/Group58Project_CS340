@@ -1,3 +1,5 @@
+// AI Citation: AI was not used for the creation of this file.
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import AppRouter from './router.jsx';
