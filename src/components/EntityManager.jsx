@@ -23,6 +23,7 @@ export default function EntityManager({ entity }) {
     const [form, setForm] = useState({}); // Form state for create/edit operations
     const [dropdownOptions, setDropdownOptions] = useState({}); // Dropdown options for select fields
     const [isEditMode, setIsEditMode] = useState(false); // Flag to determine if app is in edit mode (vs create mode)
+    const [editCompositeKeys, setEditCompositeKeys] = useState(null); // Original composite keys for updates that change FK values
 
     // Determine API host based on environment
     const apiHost = process.env.NODE_ENV === 'production'
@@ -78,6 +79,24 @@ export default function EntityManager({ entity }) {
     // Handle edit button click - populate form with item data and switch to edit mode
     function handleEdit(item) {
         setForm(item);
+        if (entity.endpoint.includes('character_items')) {
+            setEditCompositeKeys({
+                characterID: item.characterID,
+                itemID: item.itemID,
+            });
+        } else if (entity.endpoint.includes('character_quests')) {
+            setEditCompositeKeys({
+                characterID: item.characterID,
+                questID: item.questID,
+            });
+        } else if (entity.endpoint.includes('monster_areas')) {
+            setEditCompositeKeys({
+                monsterID: item.monsterID,
+                areaID: item.areaID,
+            });
+        } else {
+            setEditCompositeKeys(null);
+        }
         setIsEditMode(true);
     }
 
@@ -87,6 +106,7 @@ export default function EntityManager({ entity }) {
         entity.fields.forEach((f) => { empty[f.name] = f.type === 'checkbox' ? false : ''; });
         setForm(empty);
         setIsEditMode(false);
+        setEditCompositeKeys(null);
     }
 
     // Handle form submission for creating or updating an item
@@ -107,12 +127,12 @@ export default function EntityManager({ entity }) {
             // If in edit mode and we have the necessary keys, perform an update (PUT), otherwise create a new item (POST)
             if (isEditMode && (form[idField] || hasCompositeKeys)) {
                 let url = `${base}`;
-                if (entity.endpoint.includes('character_items') && form.characterID && form.itemID) {
-                    url = `${base}/${form.characterID}/${form.itemID}`;
-                } else if (entity.endpoint.includes('character_quests') && form.characterID && form.questID) {
-                    url = `${base}/${form.characterID}/${form.questID}`;
-                } else if (entity.endpoint.includes('monster_areas') && form.monsterID && form.areaID) {
-                    url = `${base}/${form.monsterID}/${form.areaID}`;
+                if (entity.endpoint.includes('character_items') && editCompositeKeys?.characterID && editCompositeKeys?.itemID) {
+                    url = `${base}/${editCompositeKeys.characterID}/${editCompositeKeys.itemID}`;
+                } else if (entity.endpoint.includes('character_quests') && editCompositeKeys?.characterID && editCompositeKeys?.questID) {
+                    url = `${base}/${editCompositeKeys.characterID}/${editCompositeKeys.questID}`;
+                } else if (entity.endpoint.includes('monster_areas') && editCompositeKeys?.monsterID && editCompositeKeys?.areaID) {
+                    url = `${base}/${editCompositeKeys.monsterID}/${editCompositeKeys.areaID}`;
                 } else {
                     url = `${base}/${form[idField]}`;
                 }

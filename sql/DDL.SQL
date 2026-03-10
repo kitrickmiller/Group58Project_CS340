@@ -168,13 +168,13 @@ VALUES ((SELECT characterID FROM Characters WHERE characterName = 'Arin'),
     (SELECT itemID FROM Items WHERE itemName = 'Magic Ring'), 1, TRUE);
 
  -- Insert Character_Quests
-INSERT INTO Character_Quests (characterID, questID)
+INSERT INTO Character_Quests (characterID, questID, status)
 VALUES ((SELECT characterID FROM Characters WHERE characterName = 'Arin'),
-    (SELECT questID FROM Quests WHERE questName = 'Rescue Gnomes in Silverwood Forest')),
+    (SELECT questID FROM Quests WHERE questName = 'Rescue Gnomes in Silverwood Forest'), 'In Progress'),
 ((SELECT characterID FROM Characters WHERE characterName = 'Borin'),
-    (SELECT questID FROM Quests WHERE questName = 'Defend Ironhold City from Orc Attack')),
+    (SELECT questID FROM Quests WHERE questName = 'Defend Ironhold City from Orc Attack'), 'Completed'),
 ((SELECT characterID FROM Characters WHERE characterName = 'Celeste'),
-    (SELECT questID FROM Quests WHERE questName = 'Explore the Depths of Storm Coast'));
+    (SELECT questID FROM Quests WHERE questName = 'Explore the Depths of Storm Coast'), 'Not Started');
 
 -- Insert Monster_Areas
 INSERT INTO Monster_Areas (monsterID, areaID, quantity)
@@ -194,16 +194,104 @@ CREATE PROCEDURE ResetToDDLState()
 BEGIN
     SET FOREIGN_KEY_CHECKS = 0;
 
-    TRUNCATE TABLE Monster_Areas;
-    TRUNCATE TABLE Character_Quests;
-    TRUNCATE TABLE Character_Items;
-    TRUNCATE TABLE Monsters;
-    TRUNCATE TABLE Quests;
-    TRUNCATE TABLE Areas;
-    TRUNCATE TABLE Items;
-    TRUNCATE TABLE Characters;
+    DROP TABLE IF EXISTS Monster_Areas;
+    DROP TABLE IF EXISTS Character_Quests;
+    DROP TABLE IF EXISTS Character_Items;
+    DROP TABLE IF EXISTS Monsters;
+    DROP TABLE IF EXISTS Quests;
+    DROP TABLE IF EXISTS Areas;
+    DROP TABLE IF EXISTS Items;
+    DROP TABLE IF EXISTS Characters;
 
-    SET FOREIGN_KEY_CHECKS = 1;
+    CREATE TABLE Characters (
+        characterID INT AUTO_INCREMENT PRIMARY KEY,
+        characterName VARCHAR(100) NOT NULL,
+        species VARCHAR(50) NOT NULL,
+        isPlayerCharacter TINYINT(1) NOT NULL,
+        totalExperience INT DEFAULT 0,
+        currentLevel INT,
+        currentHP INT,
+        maxHP INT,
+        armorClass INT,
+        alignment VARCHAR(50),
+        profBonus INT
+    );
+
+    CREATE TABLE Items (
+        itemID INT AUTO_INCREMENT PRIMARY KEY,
+        itemName VARCHAR(50) NOT NULL UNIQUE,
+        itemType VARCHAR(50),
+        rarity VARCHAR(50),
+        weight INT
+    );
+
+    CREATE TABLE Areas (
+        areaID INT AUTO_INCREMENT PRIMARY KEY,
+        areaType VARCHAR(50),
+        areaName VARCHAR(50) UNIQUE
+    );
+
+    CREATE TABLE Quests (
+        questID INT AUTO_INCREMENT PRIMARY KEY,
+        questName VARCHAR(100) UNIQUE,
+        questDescription TEXT,
+        questLevel INT,
+        areaID INT NOT NULL,
+        FOREIGN KEY (areaID) REFERENCES Areas(areaID)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE
+    );
+
+    CREATE TABLE Monsters (
+        monsterID INT AUTO_INCREMENT PRIMARY KEY,
+        monsterName VARCHAR(50) UNIQUE,
+        maxHP INT NOT NULL,
+        challengeRating INT,
+        sourceBook VARCHAR(50),
+        sourcePage INT,
+        experiencePoints INT
+    );
+
+    CREATE TABLE Character_Items (
+        characterID INT NOT NULL,
+        itemID INT NOT NULL,
+        quantity INT,
+        isEquipped TINYINT(1),
+        PRIMARY KEY (characterID, itemID),
+        FOREIGN KEY (characterID) REFERENCES Characters(characterID)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+        FOREIGN KEY (itemID) REFERENCES Items(itemID)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    );
+
+    CREATE TABLE Character_Quests (
+        characterID INT NOT NULL,
+        questID INT NOT NULL,
+        status VARCHAR(50),
+        PRIMARY KEY (characterID, questID),
+        FOREIGN KEY (characterID) REFERENCES Characters(characterID)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+        FOREIGN KEY (questID) REFERENCES Quests(questID)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    );
+
+    CREATE TABLE Monster_Areas (
+        monsterID INT NOT NULL,
+        areaID INT NOT NULL,
+        quantity INT,
+        PRIMARY KEY (monsterID, areaID),
+        FOREIGN KEY (monsterID) REFERENCES Monsters(monsterID)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+        FOREIGN KEY (areaID)
+            REFERENCES Areas(areaID)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
+    );
 
     INSERT INTO Areas (areaName, areaType)
     VALUES ('Silverwood Forest', 'Forest'),
@@ -244,13 +332,13 @@ BEGIN
     ((SELECT characterID FROM Characters WHERE characterName = 'Celeste'),
         (SELECT itemID FROM Items WHERE itemName = 'Magic Ring'), 1, TRUE);
 
-    INSERT INTO Character_Quests (characterID, questID)
+    INSERT INTO Character_Quests (characterID, questID, status)
     VALUES ((SELECT characterID FROM Characters WHERE characterName = 'Arin'),
-        (SELECT questID FROM Quests WHERE questName = 'Rescue Gnomes in Silverwood Forest')),
+        (SELECT questID FROM Quests WHERE questName = 'Rescue Gnomes in Silverwood Forest'), 'In Progress'),
     ((SELECT characterID FROM Characters WHERE characterName = 'Borin'),
-        (SELECT questID FROM Quests WHERE questName = 'Defend Ironhold City from Orc Attack')),
+        (SELECT questID FROM Quests WHERE questName = 'Defend Ironhold City from Orc Attack'), 'Completed'),
     ((SELECT characterID FROM Characters WHERE characterName = 'Celeste'),
-        (SELECT questID FROM Quests WHERE questName = 'Explore the Depths of Storm Coast'));
+        (SELECT questID FROM Quests WHERE questName = 'Explore the Depths of Storm Coast'), 'Not Started');
 
     INSERT INTO Monster_Areas (monsterID, areaID, quantity)
     VALUES ((SELECT monsterID FROM Monsters WHERE monsterName = 'Goblin'),
@@ -259,6 +347,8 @@ BEGIN
         (SELECT areaID FROM Areas WHERE areaName = 'Ironhold City'), 7),
     ((SELECT monsterID FROM Monsters WHERE monsterName = 'Dragon Wyrmling'),
         (SELECT areaID FROM Areas WHERE areaName = 'Storm Coast'), 3);
+
+    SET FOREIGN_KEY_CHECKS = 1;
 END //
 
 DELIMITER ;
