@@ -15,4 +15,8 @@ Project notes:
 - Intersection-table pages use dynamic dropdowns for FK selection (no manual FK ID typing).
 - Home page provides reset via `CALL ResetToDDLState()`.
 
-Reach out with questions to millekit@oregonstate.edu
+Reach out with questions to millekit@oregonstate.edu and zasteraj@oregonstate.edu
+
+Citations/AI Disclosure.
+
+No sample or skeleton code was used for this project. At times, CoPilot was used to improve code structure and provide bug fixing. Please see headers of each file to see how AI was used and what prompts were used. 
